@@ -2,44 +2,22 @@ pipeline {
     agent any
 
   stages {
-    stage('Build') {
+    stage('SCM Checkout') {
       steps {
-        script {
-          sh 'echo "Building Stage"'
-        }
+        git(branch: 'main', url: 'https://github.com/tshenoy19/config-ansible-mgt.git')
       }
     }
 
-    stage('Test') {
+    stage('Execute Ansible') {
       steps {
-        script {
-          sh 'echo "Testing Stage"'
-        }
+        ansiblePlaybook credentialsId: 'private-key', disableHostKeyChecking: true, installation: '/usr/bin', inventory: 'inventory/${inventory_file}', playbook: 'playbooks/site.yml'
       }
-    }
+   }
 
-    stage('Package') {
-      steps {
-        script {
-          sh 'echo "Packaging Stage"'
-        }
-      }
+   stage('Clean up') {
+    steps {
+      cleanWs(cleanWhenAborted: true, cleanWhenFailure: true, cleanWhenNotBuilt: true, cleanWhenUnstable: true, deleteDirs: true)
     }
-
-    stage('Deploy') {
-      steps {
-        script {
-          sh 'echo "Deploying Stage"'
-        }
-      }
-    }
-
-    stage('Clean Up') {
-      steps {
-        script {
-          sh 'echo "Cleaning Stage"'
-        }
-      }
-    }
+  }
  }
 }
